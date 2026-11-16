@@ -1,0 +1,153 @@
+import type { FishSpeciesSafety } from "../types/river";
+
+export const FISH_SAFETY_LIST: FishSpeciesSafety[] = [
+  {
+    id: "fish-tilapia",
+    nameTh: "ปลานิล",
+    scientificName: "Oreochromis niloticus",
+    habitatLayerTh: "ปลากินพืช / ผิวน้ำ–กลางน้ำ",
+    bioaccumulationRisk: "low",
+    mercurySensitivityTh: "สะสมปรอทต่ำ (0.04–0.09 mg/kg)",
+    weeklyLimitAdultGrams: 450,
+    weeklyLimitSensitiveGrams: 250,
+    avoidZonesTh: ["คุ้งบางกระเจ้า (เจ้าพระยาตอนล่าง)", "ปากคลองนครชัยศรี (ท่าจีน)"],
+    safeZonesTh: ["แม่น้ำปิง เชียงใหม่", "แม่น้ำชี ขอนแก่น", "บ่อเลี้ยงระบบปิด"],
+    preparationTipsTh: [
+      "ขอดเกล็ด ควักเหงือกและเครื่องในทิ้งให้หมดก่อนล้างน้ำสะอาด",
+      "หลีกเลี่ยงการต้มหัวปลาซ้ำหากจับจากแหล่งน้ำที่มีความขุ่นสูง",
+    ],
+    summaryTh:
+      "ปลานิลเป็นปลากินพืชและแพลงก์ตอน จึงมีอัตราการสะสมโลหะหนักในห่วงโซ่อาหารต่ำกว่าปลานักล่า เหมาะเป็นตัวเลือกหลักสำหรับครอบครัว",
+  },
+  {
+    id: "fish-catfish",
+    nameTh: "ปลาดุก",
+    scientificName: "Clarias batrachus",
+    habitatLayerTh: "ปลาหน้าดิน / ใกล้ตะกอนท้องน้ำ",
+    bioaccumulationRisk: "high",
+    mercurySensitivityTh: "สะสมตะกั่วและปรอทสูงในตะกอน (0.28–0.52 mg/kg)",
+    weeklyLimitAdultGrams: 150,
+    weeklyLimitSensitiveGrams: 0,
+    avoidZonesTh: [
+      "คุ้งบางกระเจ้า (สมุทรปราการ)",
+      "ท่าจีน (นครปฐม)",
+      "พื้นที่ใกล้ปากท่อระบายน้ำอุตสาหกรรม",
+    ],
+    safeZonesTh: ["บ่อเลี้ยงมาตรฐาน GAP", "แม่น้ำปิงตอนบน"],
+    preparationTipsTh: [
+      "งดบริโภคปลาดุกธรรมชาติจากเขตเตือนภัยสีแดงเด็ดขาด",
+      "ลอกหนังและตัดชั้นไขมันหน้าท้องออกทั้งหมดก่อนปรุง",
+      "เลือกปลาดุกเลี้ยงจากฟาร์มที่มีใบรับรองแหล่งน้ำสะอาด",
+    ],
+    summaryTh:
+      "เนื่องจากหากินบริเวณหน้าดินซึ่งเป็นจุดสะสมตะกอนปรอทและตะกั่ว ปลาดุกจากแหล่งน้ำธรรมชาติที่มีการปนเปื้อนจึงมีความเสี่ยงสูงต่อระบบประสาท",
+  },
+  {
+    id: "fish-snakehead",
+    nameTh: "ปลาช่อน",
+    scientificName: "Channa striata",
+    habitatLayerTh: "ปลานักล่า / กลางน้ำ–พื้นท้องน้ำ",
+    bioaccumulationRisk: "moderate",
+    mercurySensitivityTh: "สะสมสารปรอทระดับปานกลาง–สูงตามขนาดตัว",
+    weeklyLimitAdultGrams: 200,
+    weeklyLimitSensitiveGrams: 100,
+    avoidZonesTh: ["เจ้าพระยาตอนล่าง เขตสมุทรปราการ"],
+    safeZonesTh: ["แม่น้ำปิง", "แม่น้ำชี", "แม่กลองตอนบน"],
+    preparationTipsTh: [
+      "เลือกปลาช่อนขนาดกลาง (ไม่เกิน 600 กรัม) เพราะปลาใหญ่สะสมสารพิษนานกว่า",
+      "ตัดส่วนพุงและตับปลาทิ้ง ไม่นำเครื่องในมาทำแกงหรือต้มยำ",
+    ],
+    summaryTh:
+      "ปลาช่อนเป็นปลานักล่าที่กินสัตว์น้ำขนาดเล็ก ทำให้เกิดการสะสมสารปรอททางชีวภาพ (Biomagnification) ควรจำกัดปริมาณต่อสัปดาห์ในเขตเฝ้าระวัง",
+  },
+  {
+    id: "fish-pangasius",
+    nameTh: "ปลาสวาย",
+    scientificName: "Pangasianodon hypophthalmus",
+    habitatLayerTh: "ปลาหน้าดิน–กลางน้ำ / ไขมันสูง",
+    bioaccumulationRisk: "high",
+    mercurySensitivityTh: "สะสมโลหะหนักและสารอินทรีย์ในชั้นไขมันสูง",
+    weeklyLimitAdultGrams: 150,
+    weeklyLimitSensitiveGrams: 0,
+    avoidZonesTh: ["คุ้งบางกระเจ้า (สมุทรปราการ)", "แม่น้ำท่าจีนตอนล่าง"],
+    safeZonesTh: ["กระชังระบบควบคุมคุณภาพน้ำแม่น้ำปิง", "แม่น้ำชี"],
+    preparationTipsTh: [
+      "แล่เฉพาะเนื้อสันหลังสีขาวและตัดมันท้องสีเหลืองออกให้หมด",
+      "หญิงตั้งครรภ์และเด็กเล็กควรงดปลาสวายที่จับจากแม่น้ำเขตสีแดง",
+    ],
+    summaryTh:
+      "ปลาสวายมีชั้นไขมันใต้ผิวหนังและช่องท้องหนา ซึ่งเป็นแหล่งกักเก็บสารปนเปื้อนได้ดี จึงควรบริโภคเฉพาะจากแหล่งน้ำที่ผ่านเกณฑ์ปกติ",
+  },
+  {
+    id: "fish-red-tilapia",
+    nameTh: "ปลาทับทิม",
+    scientificName: "Oreochromis sp.",
+    habitatLayerTh: "ปลากินพืช / กระชังน้ำไหล",
+    bioaccumulationRisk: "low",
+    mercurySensitivityTh: "สะสมปรอทต่ำมากเมื่อเลี้ยงในเขตน้ำสะอาด",
+    weeklyLimitAdultGrams: 500,
+    weeklyLimitSensitiveGrams: 300,
+    avoidZonesTh: ["เขตน้ำเสีย DO ต่ำกว่า 3.0 mg/L"],
+    safeZonesTh: ["กระชังแม่น้ำแม่กลองตอนบน", "แม่น้ำปิง", "แม่น้ำชี"],
+    preparationTipsTh: [
+      "ล้างเมือกและคราบเลือดบริเวณกระดูกสันหลังให้สะอาด",
+      "ปรุงสุกด้วยความร้อนสม่ำเสมอ",
+    ],
+    summaryTh:
+      "ปลาทับทิมส่วนใหญ่เลี้ยงในกระชังที่มีการหมุนเวียนน้ำและให้อาหารสำเร็จรูป จึงมีความปลอดภัยสูงในลุ่มน้ำที่มีคุณภาพน้ำปกติ",
+  },
+  {
+    id: "fish-featherback",
+    nameTh: "ปลากราย",
+    scientificName: "Chitala ornata",
+    habitatLayerTh: "ปลานักล่า / น้ำลึก",
+    bioaccumulationRisk: "moderate",
+    mercurySensitivityTh: "สะสมสารปรอทปานกลางในเนื้อเยื่อกล้ามเนื้อ",
+    weeklyLimitAdultGrams: 220,
+    weeklyLimitSensitiveGrams: 120,
+    avoidZonesTh: ["เจ้าพระยาตอนล่าง", "ท่าจีนตอนล่าง"],
+    safeZonesTh: ["แม่น้ำโขงตอนบน", "แม่น้ำชี"],
+    preparationTipsTh: [
+      "แยกเนื้อปลาออกจากหนังและกระดูกหน้าท้องก่อนขูดทำทอดมัน",
+      "หลีกเลี่ยงปลากรายขนาดใหญ่พิเศษจากแหล่งน้ำใกล้เขตอุตสาหกรรม",
+    ],
+    summaryTh:
+      "ปลากรายบริโภคสัตว์น้ำขนาดเล็กเป็นอาหาร ควรตรวจสอบแหล่งที่มาของปลาและจำกัดปริมาณสำหรับกลุ่มเปราะบาง",
+  },
+  {
+    id: "fish-silver-barb",
+    nameTh: "ปลาตะเพียนขาว",
+    scientificName: "Barbonymus gonionotus",
+    habitatLayerTh: "ปลากินพืช / กลางน้ำ",
+    bioaccumulationRisk: "low",
+    mercurySensitivityTh: "สะสมโลหะหนักต่ำ (วงจรชีวิตสั้น)",
+    weeklyLimitAdultGrams: 480,
+    weeklyLimitSensitiveGrams: 280,
+    avoidZonesTh: ["พื้นที่ประกาศห้ามจับสัตว์น้ำฉุกเฉิน"],
+    safeZonesTh: ["แม่น้ำปิง", "แม่น้ำชี", "แม่น้ำโขง (เชียงแสน)", "แม่กลอง"],
+    preparationTipsTh: [
+      "ขอดเกล็ดและเอาเครื่องในออกทั้งหมดก่อนบั้ง",
+      "ปลอดภัยสำหรับรับประทานเป็นประจำเมื่อมาจากลุ่มน้ำปกติ",
+    ],
+    summaryTh:
+      "ปลาตะเพียนขาวเป็นปลากินพืชขนาดเล็กที่มีช่วงอายุสั้น ทำให้โอกาสสะสมสารปรอทและตะกั่วน้อยกว่าปลาน้ำลึกขนาดใหญ่",
+  },
+  {
+    id: "fish-seabass",
+    nameTh: "ปลากะพงขาว",
+    scientificName: "Lates calcarifer",
+    habitatLayerTh: "ปลานักล่า / น้ำกร่อย–ปากแม่น้ำ",
+    bioaccumulationRisk: "moderate",
+    mercurySensitivityTh: "มีความเสี่ยงสะสมปรอทบริเวณปากแม่น้ำปนเปื้อน",
+    weeklyLimitAdultGrams: 240,
+    weeklyLimitSensitiveGrams: 120,
+    avoidZonesTh: ["ปากแม่น้ำเจ้าพระยา (สมุทรปราการ)", "ปากแม่น้ำท่าจีน"],
+    safeZonesTh: ["บ่อเลี้ยงน้ำกร่อยระบบหมุนเวียนที่ได้มาตรฐาน"],
+    preparationTipsTh: [
+      "ตรวจสอบแหล่งที่มาว่ามาจากฟาร์มเพาะเลี้ยงหรือปากแม่น้ำธรรมชาติ",
+      "ตัดหนังและไขมันช่วงท้องออกก่อนนึ่งหรือต้ม",
+    ],
+    summaryTh:
+      "ปลากะพงขาวที่อาศัยบริเวณปากแม่น้ำอาจได้รับผลกระทบจากตะกอนโลหะหนักที่ไหลมารวมตัว ควรเลือกบริโภคจากฟาร์มมาตรฐาน",
+  },
+];

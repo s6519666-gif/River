@@ -1,0 +1,6 @@
+{
+  "name": "River Alert",
+  "description": "แอปพลิเคชันเตือนภัยและเฝ้าระวังสารปนเปื้อนในแม่น้ำ ตรวจสอบคุณภาพน้ำ แผนที่พื้นที่เสี่ยง ความปลอดภัยในการบริโภคปลา และแจ้งปัญหามลพิษทางน้ำ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

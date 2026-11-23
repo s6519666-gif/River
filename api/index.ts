@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import app from "../server";
+import app from "../server.js";
 
 const allowedApiPaths = /^(health|stations|alerts|reports(?:\/[^/]+\/status)?|water-check\/evaluate|images\/(generate|edit))$/;
 

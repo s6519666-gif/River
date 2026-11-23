@@ -17,7 +17,7 @@ interface TopBarProps {
 const NAV_ITEMS: Array<{ id: AppSection; label: string }> = [
   { id: "water-check", label: "ตรวจคุณภาพน้ำ" },
   { id: "alerts", label: "แจ้งเตือนภัย" },
-  { id: "risk-map", label: "แผนที่ความเสี่ยง" },
+  { id: "risk-map", label: "แผนที่รายงานคุณภาพน้ำ" },
   { id: "fish-safety", label: "ความปลอดภัยปลา" },
   { id: "report", label: "แจ้งปัญหา & ภาพ" },
 ];

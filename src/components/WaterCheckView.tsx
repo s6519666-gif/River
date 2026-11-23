@@ -23,7 +23,7 @@ interface WaterCheckViewProps {
 
 const SAMPLE_PRESETS = [
   {
-    label: "ตัวอย่างน้ำปกติ",
+    label: "กรณีจำลอง: ค่าตัวอย่างต่ำ",
     values: {
       mercuryMgL: "0.0006",
       leadMgL: "0.015",
@@ -34,7 +34,7 @@ const SAMPLE_PRESETS = [
     },
   },
   {
-    label: "สงสัยปนเปื้อนปรอท",
+    label: "กรณีจำลอง: ปรอทสูง",
     values: {
       mercuryMgL: "0.0045",
       leadMgL: "0.042",
@@ -45,7 +45,7 @@ const SAMPLE_PRESETS = [
     },
   },
   {
-    label: "โลหะหนักตะกั่วสูง",
+    label: "กรณีจำลอง: ตะกั่วสูง",
     values: {
       mercuryMgL: "0.0019",
       leadMgL: "0.085",
@@ -65,23 +65,29 @@ export function WaterCheckView({
 }: WaterCheckViewProps) {
   const [statusFilter, setStatusFilter] = useState<"all" | RiskLevel>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStationId, setSelectedStationId] = useState<string>("st-cp-01");
+  const [selectedStationId, setSelectedStationId] = useState<string>(stations[0]?.id ?? "");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [heroImgFailed, setHeroImgFailed] = useState(false);
 
   // Field sample evaluator state
   const [sampleForm, setSampleForm] = useState({
-    mercuryMgL: "0.0032",
-    leadMgL: "0.058",
-    arsenicMgL: "0.008",
-    cadmiumMgL: "0.003",
-    dissolvedOxygenMgL: "3.6",
-    ph: "6.5",
+    mercuryMgL: "",
+    leadMgL: "",
+    arsenicMgL: "",
+    cadmiumMgL: "",
+    dissolvedOxygenMgL: "",
+    ph: "",
   });
   const [evaluating, setEvaluating] = useState(false);
   const [evaluationResult, setEvaluationResult] =
     useState<FieldSampleEvaluation | null>(null);
   const [evalError, setEvalError] = useState<string | null>(null);
+
+  const updateSampleForm = (field: keyof typeof sampleForm, value: string) => {
+    setSampleForm((current) => ({ ...current, [field]: value }));
+    setEvaluationResult(null);
+    setEvalError(null);
+  };
 
   const filteredStations = useMemo(() => {
     return stations.filter((st) => {
@@ -125,8 +131,15 @@ export function WaterCheckView({
 
   const handleEvaluateSample = async (e: React.FormEvent) => {
     e.preventDefault();
+    const values = Object.values(sampleForm);
+    if (values.some((value) => value.trim() === "" || !Number.isFinite(Number(value)))) {
+      setEvaluationResult(null);
+      setEvalError("กรุณากรอกค่าจากผลตรวจให้ครบทุกช่องก่อนเปรียบเทียบ");
+      return;
+    }
     setEvaluating(true);
     setEvalError(null);
+    setEvaluationResult(null);
     try {
       const res = await fetch("/api/water-check/evaluate", {
         method: "POST",
@@ -190,20 +203,18 @@ export function WaterCheckView({
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
-              <span>ศูนย์เฝ้าระวังสารปนเปื้อนลุ่มน้ำไทย</span>
+              <span>รายงานจากแหล่งข้อมูลสาธารณะที่ตรวจสอบได้</span>
               <span aria-hidden="true">·</span>
-              <span>อัปเดตล่าสุด 15 พ.ย. 2569</span>
-              <span aria-hidden="true">·</span>
-              <span>เกณฑ์กรมควบคุมมลพิษ (PCD)</span>
+              <span>ไม่มีข้อมูลสถานีแบบเรียลไทม์ที่เชื่อมต่อ</span>
             </div>
 
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 leading-tight [text-wrap:balance] max-w-2xl">
-              ตรวจสอบคุณภาพน้ำและเตือนภัยสารปนเปื้อนในแม่น้ำแบบทันท่วงที
+              ดูรายงานคุณภาพน้ำพร้อมแหล่งอ้างอิงและวันที่เก็บตัวอย่าง
             </h1>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
-              ติดตามระดับสารปรอท (Hg) ตะกั่ว (Pb) สารหนู และค่าออกซิเจนละลายน้ำแบบรายสถานี
-              เพื่อช่วยให้ประชาชน ชาวประมง และเกษตรกรหลีกเลี่ยงพื้นที่เสี่ยงและบริโภคสัตว์น้ำอย่างปลอดภัย
+              แสดงเฉพาะผลตรวจที่มีหน่วยงานและวันที่อ้างอิงชัดเจน ขณะนี้ไม่มี feed ผลตรวจสถานีล่าสุด
+              การไม่มีข้อมูลไม่ใช่หลักฐานว่าน้ำปลอดภัยหรือปนเปื้อน
             </p>
           </div>
 
@@ -221,7 +232,7 @@ export function WaterCheckView({
               onClick={() => onNavigate("risk-map")}
               className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <span>เปิดแผนที่พื้นที่เสี่ยง</span>
+              <span>เปิดแผนที่รายงานคุณภาพน้ำ</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -231,7 +242,7 @@ export function WaterCheckView({
           {!heroImgFailed ? (
             <img
               src="/src/assets/images/river_monitoring_hero_1794815670593.jpg"
-              alt="ทุ่นตรวจวัดคุณภาพน้ำอัตโนมัติในแม่น้ำสายหลักช่วงเช้า"
+              alt="ภาพประกอบการตรวจวัดคุณภาพน้ำ ไม่ใช่ภาพจากสถานีที่เชื่อมต่อกับระบบ"
               referrerPolicy="no-referrer"
               onError={() => setHeroImgFailed(true)}
               className="w-full h-full lg:h-full object-cover"
@@ -239,17 +250,17 @@ export function WaterCheckView({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center p-6 text-slate-300 bg-gradient-to-br from-slate-800 to-teal-950">
               <Droplets className="w-10 h-10 mb-2 text-teal-400" />
-              <span className="text-sm font-medium">ระบบทุ่นตรวจวัดคุณภาพน้ำลุ่มน้ำไทย</span>
+              <span className="text-sm font-medium">ตัวอย่างการติดตามคุณภาพน้ำ</span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/35 to-transparent flex flex-col justify-end p-6">
             <div className="text-xs text-slate-200 font-medium flex items-center gap-2">
-              <span>ทุ่นตรวจวัดโลหะหนักอัตโนมัติ</span>
+              <span>ภาพประกอบ</span>
               <span aria-hidden="true">·</span>
-              <span className="font-mono tabular-nums">6 ลุ่มน้ำหลัก</span>
+              <span className="font-mono tabular-nums">ไม่ใช่ข้อมูลสด</span>
             </div>
             <p className="text-sm sm:text-base font-semibold text-white mt-1">
-              เฝ้าระวังสารปรอท ตะกั่ว และคุณภาพน้ำผิวดินตลอด 24 ชั่วโมง
+              ดูผลตรวจที่มีแหล่งข้อมูลและวันที่ระบุไว้ชัดเจน
             </p>
           </div>
         </div>
@@ -264,36 +275,40 @@ export function WaterCheckView({
           <div className="text-xs text-slate-500 font-medium">สถานีตรวจวัดทั้งหมด</div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-mono font-bold tabular-nums text-slate-900">
-              {kpis.total}
+              {kpis.total === 0 ? "—" : kpis.total}
             </span>
-            <span className="text-xs text-slate-500">จุดตรวจวัด</span>
+            <span className="text-xs text-slate-500">สถานีที่เชื่อมต่อ</span>
           </div>
-          <div className="mt-1.5 text-xs text-slate-500">ครอบคลุม 6 ลุ่มน้ำสำคัญ</div>
+          <div className="mt-1.5 text-xs text-slate-500">
+            {kpis.total === 0 ? "ยังไม่มี feed ข้อมูลสถานีที่ยืนยัน" : "จำนวนสถานีในข้อมูลที่เชื่อมต่อ"}
+          </div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-5">
           <div className="text-xs text-slate-500 font-medium">จุดเกินเกณฑ์ / เฝ้าระวัง</div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-mono font-bold tabular-nums text-rose-700">
-              {kpis.flagged}
+              {kpis.total === 0 ? "—" : kpis.flagged}
             </span>
-            <span className="text-xs text-rose-700 font-medium">
-              ({kpis.criticalCount} วิกฤต)
+            <span className="text-xs text-slate-500 font-medium">
+              {kpis.total === 0 ? "ไม่มีข้อมูล" : `(${kpis.criticalCount} ระดับวิกฤต)`}
             </span>
           </div>
-          <div className="mt-1.5 text-xs text-slate-500">ต้องแจ้งเตือนชุมชนริมน้ำ</div>
+          <div className="mt-1.5 text-xs text-slate-500">
+            {kpis.total === 0 ? "ไม่สามารถสรุปสถานะความปลอดภัยได้" : "ตามข้อมูลสถานีที่เชื่อมต่อ"}
+          </div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-5">
           <div className="text-xs text-slate-500 font-medium">ค่าปรอทสูงสุด (Hg)</div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-3xl font-mono font-bold tabular-nums text-slate-900">
-              {kpis.maxHg.toFixed(4)}
+              {kpis.total === 0 ? "—" : kpis.maxHg.toFixed(4)}
             </span>
             <span className="text-xs font-mono text-slate-500">mg/L</span>
           </div>
-          <div className="mt-1.5 text-xs text-rose-700 font-medium">
-            เกณฑ์ปลอดภัย ≤ 0.0020 mg/L
+          <div className="mt-1.5 text-xs text-slate-500 font-medium">
+            {kpis.total === 0 ? "ยังไม่มีข้อมูลตรวจวัด" : "ค่าสูงสุดจากข้อมูลสถานีที่เชื่อมต่อ"}
           </div>
         </div>
 
@@ -301,12 +316,12 @@ export function WaterCheckView({
           <div className="text-xs text-slate-500 font-medium">ค่าตะกั่วสูงสุด (Pb)</div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-3xl font-mono font-bold tabular-nums text-slate-900">
-              {kpis.maxPb.toFixed(3)}
+              {kpis.total === 0 ? "—" : kpis.maxPb.toFixed(3)}
             </span>
             <span className="text-xs font-mono text-slate-500">mg/L</span>
           </div>
-          <div className="mt-1.5 text-xs text-amber-700 font-medium">
-            เกณฑ์ปลอดภัย ≤ 0.050 mg/L
+          <div className="mt-1.5 text-xs text-slate-500 font-medium">
+            {kpis.total === 0 ? "ยังไม่มีข้อมูลตรวจวัด" : "ค่าสูงสุดจากข้อมูลสถานีที่เชื่อมต่อ"}
           </div>
         </div>
       </section>
@@ -320,7 +335,7 @@ export function WaterCheckView({
                 ตารางตรวจวัดคุณภาพน้ำรายสถานี
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                คลิกที่สถานีเพื่อดูกราฟแนวโน้ม 14 วันและคำแนะนำเฉพาะพื้นที่
+                แสดงเฉพาะสถานีที่มีแหล่งข้อมูลอ้างอิงและวันที่ตรวจวัด
               </p>
             </div>
 
@@ -376,18 +391,11 @@ export function WaterCheckView({
           ) : filteredStations.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm font-medium text-slate-700">
-                ไม่พบสถานีที่ตรงกับคำค้นหา
+                ยังไม่มีผลตรวจจากสถานีที่มีแหล่งอ้างอิงเชื่อมต่อ
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setStatusFilter("all");
-                  setSearchQuery("");
-                }}
-                className="mt-3 px-4 py-2 text-xs font-semibold text-teal-800 bg-teal-50 rounded-lg hover:bg-teal-100 cursor-pointer"
-              >
-                ล้างตัวกรองทั้งหมด
-              </button>
+              <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
+                การไม่มีข้อมูลไม่ใช่ผลยืนยันความปลอดภัยหรือการปนเปื้อนของน้ำ
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -710,30 +718,36 @@ export function WaterCheckView({
           <div className="lg:col-span-6 space-y-5">
             <div>
               <div className="text-xs text-slate-500 font-medium">
-                เครื่องมือประเมินผลภาคสนาม · เทียบเกณฑ์กรมควบคุมมลพิษและ WHO
+                เครื่องมือเปรียบเทียบค่าที่ป้อน · ไม่ใช่ผลประเมินจากหน่วยงาน
               </div>
               <h2 className="text-xl font-bold text-slate-900 mt-1">
-                ประเมินความปลอดภัยจากผลตรวจตัวอย่างน้ำ
+                เปรียบเทียบค่าตรวจวัดกับค่าอ้างอิงตัวอย่าง
               </h2>
               <p className="text-sm text-slate-600 mt-1">
-                กรอกค่าสารปนเปื้อนจากชุดทดสอบภาคสนามหรือห้องปฏิบัติการ
-                เพื่อตรวจสอบว่าน้ำปลอดภัยต่อการใช้อุปโภค เกษตรกรรม และเลี้ยงปลาหรือไม่
+                กรอกค่าจากผลตรวจจริงเพื่อเปรียบเทียบกับค่าอ้างอิงตัวอย่างในระบบ
+                เครื่องมือนี้ไม่เชื่อมต่อสถานีหรือประกาศมาตรฐานล่าสุด และผลเปรียบเทียบไม่ใช่การรับรองความปลอดภัยของน้ำ
               </p>
             </div>
 
-            {/* Quick presets */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-slate-500 mr-1">ชุดข้อมูลตัวอย่าง:</span>
+              <span className="text-xs text-slate-500 mr-1">กรณีจำลองเท่านั้น:</span>
               {SAMPLE_PRESETS.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
-                  onClick={() => setSampleForm(preset.values)}
+                  onClick={() => {
+                    setSampleForm(preset.values);
+                    setEvaluationResult(null);
+                    setEvalError(null);
+                  }}
                   className="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   {preset.label}
                 </button>
               ))}
+              <p className="basis-full text-xs leading-relaxed text-slate-500">
+                ทุกช่องเริ่มต้นว่าง กรณีจำลองจะเติมตัวเลขสมมุติเท่านั้น ไม่ใช่ผลตรวจจากแม่น้ำจริง
+              </p>
             </div>
 
             <form onSubmit={handleEvaluateSample} className="space-y-4">
@@ -747,9 +761,7 @@ export function WaterCheckView({
                     step="0.0001"
                     min="0"
                     value={sampleForm.mercuryMgL}
-                    onChange={(e) =>
-                      setSampleForm({ ...sampleForm, mercuryMgL: e.target.value })
-                    }
+                    onChange={(e) => updateSampleForm("mercuryMgL", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -763,9 +775,7 @@ export function WaterCheckView({
                     step="0.001"
                     min="0"
                     value={sampleForm.leadMgL}
-                    onChange={(e) =>
-                      setSampleForm({ ...sampleForm, leadMgL: e.target.value })
-                    }
+                    onChange={(e) => updateSampleForm("leadMgL", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -779,9 +789,7 @@ export function WaterCheckView({
                     step="0.001"
                     min="0"
                     value={sampleForm.arsenicMgL}
-                    onChange={(e) =>
-                      setSampleForm({ ...sampleForm, arsenicMgL: e.target.value })
-                    }
+                    onChange={(e) => updateSampleForm("arsenicMgL", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -795,9 +803,7 @@ export function WaterCheckView({
                     step="0.0005"
                     min="0"
                     value={sampleForm.cadmiumMgL}
-                    onChange={(e) =>
-                      setSampleForm({ ...sampleForm, cadmiumMgL: e.target.value })
-                    }
+                    onChange={(e) => updateSampleForm("cadmiumMgL", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -811,12 +817,7 @@ export function WaterCheckView({
                     step="0.1"
                     min="0"
                     value={sampleForm.dissolvedOxygenMgL}
-                    onChange={(e) =>
-                      setSampleForm({
-                        ...sampleForm,
-                        dissolvedOxygenMgL: e.target.value,
-                      })
-                    }
+                    onChange={(e) => updateSampleForm("dissolvedOxygenMgL", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -831,9 +832,7 @@ export function WaterCheckView({
                     min="0"
                     max="14"
                     value={sampleForm.ph}
-                    onChange={(e) =>
-                      setSampleForm({ ...sampleForm, ph: e.target.value })
-                    }
+                    onChange={(e) => updateSampleForm("ph", e.target.value)}
                     className="mt-1 w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   />
                 </label>
@@ -844,7 +843,7 @@ export function WaterCheckView({
                 disabled={evaluating}
                 className="px-5 py-2.5 text-sm font-semibold text-white bg-teal-700 rounded-lg hover:bg-teal-800 disabled:opacity-60 transition-colors cursor-pointer"
               >
-                {evaluating ? "กำลังประเมินผล..." : "วิเคราะห์ความปลอดภัยตัวอย่างน้ำ"}
+                {evaluating ? "กำลังเปรียบเทียบ..." : "เปรียบเทียบค่ากับค่าอ้างอิงตัวอย่าง"}
               </button>
             </form>
           </div>
@@ -860,10 +859,10 @@ export function WaterCheckView({
               <div className="text-center space-y-2 py-8">
                 <ShieldAlert className="w-9 h-9 text-slate-400 mx-auto" />
                 <p className="text-sm font-semibold text-slate-700">
-                  พร้อมวิเคราะห์ผลตรวจวัดคุณภาพน้ำ
+                  รอค่าตรวจวัดจากผู้ใช้
                 </p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  กดปุ่ม &ldquo;วิเคราะห์ความปลอดภัยตัวอย่างน้ำ&rdquo; เพื่อเทียบค่ากับมาตรฐานน้ำผิวดินและรับคำแนะนำการใช้งาน
+                  กรอกผลตรวจจริงหรือเลือกกรณีจำลอง แล้วกดเปรียบเทียบ ค่าที่แสดงไม่ใช่ผลตรวจจากหน่วยงาน
                 </p>
               </div>
             )}
@@ -873,19 +872,27 @@ export function WaterCheckView({
                 <div className="flex items-start justify-between gap-4 pb-3 border-b border-slate-200">
                   <div>
                     <div className="text-xs text-slate-500 font-medium">
-                      ผลการประเมินคุณภาพน้ำ
+                      ผลเปรียบเทียบจากค่าที่คุณป้อน · ไม่ใช่ผลตรวจยืนยัน
                     </div>
                     <h3 className="text-base font-bold text-slate-900 mt-1">
-                      {evaluationResult.headlineTh}
+                      {evaluationResult.overallStatus === "normal"
+                        ? "ค่าที่ป้อนอยู่ในช่วงค่าอ้างอิงที่ตั้งไว้"
+                        : "มีค่าที่ป้อนบางรายการอยู่นอกค่าอ้างอิงที่ตั้งไว้"}
                     </h3>
                   </div>
-                  <StatusBadge status={evaluationResult.overallStatus} />
+                  <span className="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600">
+                    ค่าที่ป้อนเท่านั้น
+                  </span>
                 </div>
+
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-900">
+                  ผลนี้คำนวณจากค่าที่คุณป้อนและค่าอ้างอิงตัวอย่างในระบบเท่านั้น ไม่ได้ยืนยันแหล่งที่มา การปนเปื้อน หรือความปลอดภัยของน้ำ และไม่ควรใช้ตัดสินใจเรื่องดื่ม อาบน้ำ หรือใช้น้ำเพื่อเกษตรและเพาะเลี้ยงสัตว์น้ำ
+                </p>
 
                 {evaluationResult.exceededParameters.length > 0 && (
                   <div className="space-y-2">
                     <div className="text-xs font-semibold text-slate-700">
-                      พารามิเตอร์ที่เกินเกณฑ์หรือใกล้ระดับเฝ้าระวัง
+                      ค่าที่ป้อนอยู่นอกหรือใกล้ค่าอ้างอิงในระบบ
                     </div>
                     <div className="divide-y divide-slate-200 border border-slate-200 rounded-lg bg-white">
                       {evaluationResult.exceededParameters.map((item) => (
@@ -907,7 +914,7 @@ export function WaterCheckView({
                               {item.measured}
                             </span>
                             <span className="text-slate-400 ml-2">
-                              (เกณฑ์ {item.limit})
+                              (ค่าอ้างอิงในระบบ {item.limit})
                             </span>
                           </div>
                         </div>
@@ -916,39 +923,8 @@ export function WaterCheckView({
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="bg-white border border-slate-200 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-slate-800">
-                      การบริโภค / น้ำดื่ม
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      {evaluationResult.usageGuidance.drinkingTh}
-                    </p>
-                  </div>
-                  <div className="bg-white border border-slate-200 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-slate-800">
-                      การใช้อุปโภค / อาบน้ำ
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      {evaluationResult.usageGuidance.bathingTh}
-                    </p>
-                  </div>
-                  <div className="bg-white border border-slate-200 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-slate-800">
-                      การเลี้ยงปลา / กระชัง
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      {evaluationResult.usageGuidance.aquacultureTh}
-                    </p>
-                  </div>
-                  <div className="bg-white border border-slate-200 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-slate-800">
-                      การเกษตร / รดน้ำพืช
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      {evaluationResult.usageGuidance.agricultureTh}
-                    </p>
-                  </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-xs leading-relaxed text-slate-700">
+                  เครื่องมือนี้ไม่สามารถให้คำแนะนำการใช้น้ำหรือยืนยันผลกระทบต่อสุขภาพได้ หากต้องตัดสินใจจากคุณภาพน้ำ ให้ใช้ผลตรวจจากห้องปฏิบัติการที่เชื่อถือได้และคำแนะนำปัจจุบันจากหน่วยงานที่รับผิดชอบ
                 </div>
               </div>
             )}

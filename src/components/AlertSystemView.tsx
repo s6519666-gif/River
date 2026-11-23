@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Check, MapPin, ShieldCheck } from "lucide-react";
+import { Bell, Check, MapPin } from "lucide-react";
 import type { RiskLevel, RiverAlertItem } from "../types/river";
 import { StatusBadge } from "./StatusBadge";
 
@@ -99,14 +99,13 @@ export function AlertSystemView({
       <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1.5 max-w-2xl">
           <div className="text-xs text-slate-500 font-medium">
-            ระบบแจ้งเตือนสารพิษเกินค่ามาตรฐาน · อ้างอิงเกณฑ์คุณภาพน้ำผิวดิน
+            แสดงเฉพาะประกาศที่มีแหล่งข้อมูลตรวจสอบได้
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
-            ศูนย์แจ้งเตือนภัยสารปนเปื้อนในแม่น้ำ
+            ประกาศเตือนคุณภาพน้ำจากหน่วยงาน
           </h1>
           <p className="text-sm text-slate-600">
-            ติดตามประกาศเตือนภัยล่าสุดเมื่อตรวจพบปรอท ตะกั่ว หรือสารหนูเกินมาตรฐาน
-            พร้อมแนวทางปฏิบัติแยกตามกลุ่มผู้ใช้น้ำริมแม่น้ำ
+            ขณะนี้ไม่มี feed ประกาศเตือนภัยจากหน่วยงานที่เชื่อมต่อ การไม่มีรายการแจ้งเตือนไม่ได้ยืนยันว่าคุณภาพน้ำปกติ
           </p>
         </div>
 
@@ -179,16 +178,20 @@ export function AlertSystemView({
             </div>
           ) : filteredAlerts.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
-              <ShieldCheck className="w-9 h-9 text-emerald-600 mx-auto mb-2" />
+              <Bell className="w-9 h-9 text-slate-500 mx-auto mb-2" aria-hidden="true" />
               <p className="text-sm font-semibold text-slate-800">
-                ไม่พบรายการแจ้งเตือนในระดับที่เลือก
+                ไม่มีประกาศเตือนภัยจากแหล่งข้อมูลที่เชื่อมต่อ
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
+                นี่เป็นข้อจำกัดของข้อมูลในระบบ ไม่ใช่ผลยืนยันว่าปลอดภัยหรือไม่มีการปนเปื้อน
+                โปรดตรวจสอบประกาศล่าสุดจากหน่วยงานที่เกี่ยวข้อง
               </p>
               <button
                 type="button"
                 onClick={() => setSeverityFilter("all")}
                 className="mt-3 px-4 py-2 text-xs font-semibold text-teal-800 bg-teal-50 rounded-lg hover:bg-teal-100 cursor-pointer"
               >
-                แสดงการแจ้งเตือนทั้งหมด
+                ล้างตัวกรอง
               </button>
             </div>
           ) : (

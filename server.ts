@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import type { Request, Response } from "express";
+import type { CitizenReport, MonitoringStation } from "./src/types/river";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -39,307 +40,30 @@ const STANDARDS = {
   phMax: 8.5,
 };
 
-interface StationRecord {
-  id: string;
-  code: string;
-  nameTh: string;
-  riverNameTh: string;
-  provinceTh: string;
-  lat: number;
-  lng: number;
-  mapX: number;
-  mapY: number;
-  status: "normal" | "warning" | "critical";
-  updatedAt: string;
-  mercuryMgL: number;
-  leadMgL: number;
-  arsenicMgL: number;
-  cadmiumMgL: number;
-  dissolvedOxygenMgL: number;
-  ph: number;
-  turbidityNtu: number;
-  waterTempC: number;
-  summaryTh: string;
-  fishAdvisoryTh: string;
-  history: Array<{
-    date: string;
-    mercuryMgL: number;
-    leadMgL: number;
-    dissolvedOxygenMgL: number;
-  }>;
-}
+const STATIONS: MonitoringStation[] = [];
+const INITIAL_REPORTS: CitizenReport[] = [];
 
-const STATIONS: StationRecord[] = [
-  {
-    id: "st-cp-01",
-    code: "CP-SM-04",
-    nameTh: "สถานีคุ้งบางกระเจ้า — ท้ายนิคมฯ",
-    riverNameTh: "แม่น้ำเจ้าพระยา",
-    provinceTh: "สมุทรปราการ",
-    lat: 13.6812,
-    lng: 100.5625,
-    mapX: 525,
-    mapY: 425,
-    status: "critical",
-    updatedAt: "15 พ.ย. 2569 · 14:30 น.",
-    mercuryMgL: 0.0048,
-    leadMgL: 0.068,
-    arsenicMgL: 0.009,
-    cadmiumMgL: 0.0042,
-    dissolvedOxygenMgL: 2.9,
-    ph: 6.3,
-    turbidityNtu: 64,
-    waterTempC: 30.4,
-    summaryTh:
-      "พบค่าปรอทและตะกั่วสูงกว่าเกณฑ์มาตรฐานน้ำผิวดิน ร่วมกับค่าออกซิเจนละลายน้ำต่ำกว่า 3.0 mg/L",
-    fishAdvisoryTh:
-      "งดจับและงดบริโภคปลาหน้าดิน (ปลาดุก ปลาสวาย) ในรัศมี 5 กม. ชั่วคราว",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0018, leadMgL: 0.032, dissolvedOxygenMgL: 4.5 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0021, leadMgL: 0.039, dissolvedOxygenMgL: 4.1 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0024, leadMgL: 0.044, dissolvedOxygenMgL: 3.9 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0029, leadMgL: 0.051, dissolvedOxygenMgL: 3.5 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0036, leadMgL: 0.056, dissolvedOxygenMgL: 3.2 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0042, leadMgL: 0.062, dissolvedOxygenMgL: 3.0 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0048, leadMgL: 0.068, dissolvedOxygenMgL: 2.9 },
-    ],
-  },
-  {
-    id: "st-tc-02",
-    code: "TC-NK-02",
-    nameTh: "สถานีท่าน้ำนครชัยศรี",
-    riverNameTh: "แม่น้ำท่าจีน",
-    provinceTh: "นครปฐม",
-    lat: 13.8024,
-    lng: 100.1864,
-    mapX: 390,
-    mapY: 365,
-    status: "critical",
-    updatedAt: "15 พ.ย. 2569 · 14:15 น.",
-    mercuryMgL: 0.0031,
-    leadMgL: 0.082,
-    arsenicMgL: 0.014,
-    cadmiumMgL: 0.0061,
-    dissolvedOxygenMgL: 3.1,
-    ph: 6.4,
-    turbidityNtu: 78,
-    waterTempC: 29.8,
-    summaryTh:
-      "ตรวจพบสารตะกั่วและแคดเมียมเกินค่ามาตรฐานหลังฝนตกหนักและน้ำไหลหลากจากเขตเกษตร-อุตสาหกรรม",
-    fishAdvisoryTh:
-      "หลีกเลี่ยงการบริโภคสัตว์น้ำหน้าดิน และงดสูบน้ำเข้าระบบบ่อเลี้ยงปลา",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0014, leadMgL: 0.042, dissolvedOxygenMgL: 4.3 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0017, leadMgL: 0.048, dissolvedOxygenMgL: 4.0 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0021, leadMgL: 0.055, dissolvedOxygenMgL: 3.8 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0025, leadMgL: 0.064, dissolvedOxygenMgL: 3.5 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0027, leadMgL: 0.071, dissolvedOxygenMgL: 3.3 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0029, leadMgL: 0.077, dissolvedOxygenMgL: 3.2 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0031, leadMgL: 0.082, dissolvedOxygenMgL: 3.1 },
-    ],
-  },
-  {
-    id: "st-mk-03",
-    code: "MK-RB-01",
-    nameTh: "สถานีบ้านโป่ง — คลองสายรอง",
-    riverNameTh: "แม่น้ำแม่กลอง",
-    provinceTh: "ราชบุรี",
-    lat: 13.8165,
-    lng: 99.8722,
-    mapX: 255,
-    mapY: 390,
-    status: "warning",
-    updatedAt: "15 พ.ย. 2569 · 13:50 น.",
-    mercuryMgL: 0.0018,
-    leadMgL: 0.045,
-    arsenicMgL: 0.008,
-    cadmiumMgL: 0.0034,
-    dissolvedOxygenMgL: 3.9,
-    ph: 6.9,
-    turbidityNtu: 42,
-    waterTempC: 29.1,
-    summaryTh:
-      "ค่าตะกั่วและปรอทใกล้แตะเพดานเฝ้าระวังระดับ 90% และออกซิเจนละลายน้ำลดลงเล็กน้อย",
-    fishAdvisoryTh:
-      "จำกัดการบริโภคปลานักล่าขนาดใหญ่ (ปลาช่อน ปลากราย) ไม่เกิน 150 กรัม/สัปดาห์",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0011, leadMgL: 0.028, dissolvedOxygenMgL: 5.1 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0012, leadMgL: 0.031, dissolvedOxygenMgL: 4.8 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0014, leadMgL: 0.035, dissolvedOxygenMgL: 4.5 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0015, leadMgL: 0.039, dissolvedOxygenMgL: 4.3 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0016, leadMgL: 0.041, dissolvedOxygenMgL: 4.1 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0017, leadMgL: 0.043, dissolvedOxygenMgL: 4.0 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0018, leadMgL: 0.045, dissolvedOxygenMgL: 3.9 },
-    ],
-  },
-  {
-    id: "st-mg-04",
-    code: "MG-CR-07",
-    nameTh: "สถานีเชียงแสน — ปากน้ำกก",
-    riverNameTh: "แม่น้ำโขง",
-    provinceTh: "เชียงราย",
-    lat: 20.2735,
-    lng: 100.0882,
-    mapX: 435,
-    mapY: 115,
-    status: "warning",
-    updatedAt: "15 พ.ย. 2569 · 14:00 น.",
-    mercuryMgL: 0.0019,
-    leadMgL: 0.038,
-    arsenicMgL: 0.011,
-    cadmiumMgL: 0.0029,
-    dissolvedOxygenMgL: 5.6,
-    ph: 7.4,
-    turbidityNtu: 58,
-    waterTempC: 24.5,
-    summaryTh:
-      "พบตะกอนแขวนลอยและสารหนูสูงขึ้นเล็กน้อยตามกระแสน้ำเหนือ แนะนำกรองน้ำก่อนใช้อุปโภค",
-    fishAdvisoryTh:
-      "ปลาขนาดเล็กและปลากินพืชบริโภคได้ปกติ ควรตัดส่วนหัวและเครื่องในออกก่อนปรุงสุก",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0013, leadMgL: 0.025, dissolvedOxygenMgL: 6.1 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0015, leadMgL: 0.029, dissolvedOxygenMgL: 5.9 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0016, leadMgL: 0.031, dissolvedOxygenMgL: 5.8 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0017, leadMgL: 0.034, dissolvedOxygenMgL: 5.7 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0018, leadMgL: 0.036, dissolvedOxygenMgL: 5.7 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0018, leadMgL: 0.037, dissolvedOxygenMgL: 5.6 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0019, leadMgL: 0.038, dissolvedOxygenMgL: 5.6 },
-    ],
-  },
-  {
-    id: "st-pg-05",
-    code: "PG-CM-03",
-    nameTh: "สถานีสะพานนวรัฐ",
-    riverNameTh: "แม่น้ำปิง",
-    provinceTh: "เชียงใหม่",
-    lat: 18.7877,
-    lng: 99.0044,
-    mapX: 295,
-    mapY: 180,
-    status: "normal",
-    updatedAt: "15 พ.ย. 2569 · 14:20 น.",
-    mercuryMgL: 0.0005,
-    leadMgL: 0.012,
-    arsenicMgL: 0.003,
-    cadmiumMgL: 0.0011,
-    dissolvedOxygenMgL: 6.8,
-    ph: 7.2,
-    turbidityNtu: 18,
-    waterTempC: 25.6,
-    summaryTh:
-      "คุณภาพน้ำอยู่ในเกณฑ์ดีมาก สารโลหะหนักต่ำกว่าเกณฑ์ปลอดภัยอย่างมีนัยสำคัญ",
-    fishAdvisoryTh:
-      "สามารถจับและบริโภคสัตว์น้ำได้ตามปกติ โดยปรุงสุกสะอาด",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0006, leadMgL: 0.014, dissolvedOxygenMgL: 6.5 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0006, leadMgL: 0.013, dissolvedOxygenMgL: 6.6 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0005, leadMgL: 0.013, dissolvedOxygenMgL: 6.6 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0005, leadMgL: 0.012, dissolvedOxygenMgL: 6.7 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0005, leadMgL: 0.012, dissolvedOxygenMgL: 6.7 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0005, leadMgL: 0.012, dissolvedOxygenMgL: 6.8 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0005, leadMgL: 0.012, dissolvedOxygenMgL: 6.8 },
-    ],
-  },
-  {
-    id: "st-ch-06",
-    code: "CH-KK-05",
-    nameTh: "สถานีบ้านท่าพระ",
-    riverNameTh: "แม่น้ำชี",
-    provinceTh: "ขอนแก่น",
-    lat: 16.3348,
-    lng: 102.8112,
-    mapX: 730,
-    mapY: 260,
-    status: "normal",
-    updatedAt: "15 พ.ย. 2569 · 14:10 น.",
-    mercuryMgL: 0.0007,
-    leadMgL: 0.016,
-    arsenicMgL: 0.004,
-    cadmiumMgL: 0.0014,
-    dissolvedOxygenMgL: 6.1,
-    ph: 7.5,
-    turbidityNtu: 22,
-    waterTempC: 27.9,
-    summaryTh:
-      "คุณภาพน้ำอยู่ในเกณฑ์มาตรฐานปกติ เหมาะสมต่อการเกษตรและการประมงพื้นบ้าน",
-    fishAdvisoryTh:
-      "สัตว์น้ำในพื้นที่ปลอดภัยต่อการบริโภคตามเกณฑ์มาตรฐานอาหาร",
-    history: [
-      { date: "02 พ.ย.", mercuryMgL: 0.0008, leadMgL: 0.018, dissolvedOxygenMgL: 5.8 },
-      { date: "04 พ.ย.", mercuryMgL: 0.0008, leadMgL: 0.018, dissolvedOxygenMgL: 5.9 },
-      { date: "06 พ.ย.", mercuryMgL: 0.0007, leadMgL: 0.017, dissolvedOxygenMgL: 6.0 },
-      { date: "08 พ.ย.", mercuryMgL: 0.0007, leadMgL: 0.017, dissolvedOxygenMgL: 6.0 },
-      { date: "10 พ.ย.", mercuryMgL: 0.0007, leadMgL: 0.016, dissolvedOxygenMgL: 6.1 },
-      { date: "12 พ.ย.", mercuryMgL: 0.0007, leadMgL: 0.016, dissolvedOxygenMgL: 6.1 },
-      { date: "15 พ.ย.", mercuryMgL: 0.0007, leadMgL: 0.016, dissolvedOxygenMgL: 6.1 },
-    ],
-  },
-];
-
-const INITIAL_REPORTS = [
-  {
-    id: "rep-101",
-    reporterName: "วิชัย ชาวประมงคุ้งบางกระเจ้า",
-    riverNameTh: "แม่น้ำเจ้าพระยา",
-    locationDetail: "ท่าเรือวัดบางน้ำผึ้งนอก อ.พระประแดง",
-    issueType: "dead_fish",
-    issueLabelTh: "ปลาตายจำนวนมาก",
-    severity: "critical",
-    description:
-      "พบปลาสวายและปลากดลอยตายริมตลิ่งกว่า 30 ตัวตั้งแต่ช่วงเช้า น้ำมีสีคล้ำและมีฟองผิดปกติ",
-    mapX: 540,
-    mapY: 438,
-    status: "investigating",
-    createdAt: "15 พ.ย. 2569 · 08:40 น.",
-  },
-  {
-    id: "rep-102",
-    reporterName: "สมพร เกษตรกรสวนส้มโอ",
-    riverNameTh: "แม่น้ำท่าจีน",
-    locationDetail: "ปากคลองต้นตาล อ.นครชัยศรี",
-    issueType: "chemical_odor",
-    issueLabelTh: "กลิ่นสารเคมีรุนแรง",
-    severity: "critical",
-    description:
-      "น้ำในคลองส่งกลิ่นฉุนคล้ายตัวทำละลายตั้งแต่เมื่อคืน ไม่กล้าสูบน้ำเข้าร่องสวน",
-    mapX: 372,
-    mapY: 378,
-    status: "pending",
-    createdAt: "15 พ.ย. 2569 · 10:15 น.",
-  },
-  {
-    id: "rep-103",
-    reporterName: "กัญญา อาสาสมัครสิ่งแวดล้อม",
-    riverNameTh: "แม่น้ำแม่กลอง",
-    locationDetail: "ช่วงใต้สะพานบ้านโป่ง",
-    issueType: "discolored_water",
-    issueLabelTh: "น้ำเปลี่ยนสี / คราบน้ำมัน",
-    severity: "warning",
-    description:
-      "สังเกตเห็นคราบน้ำมันบางๆ ลอยเป็นทางยาวประมาณ 200 เมตร ใกล้จุดจอดเรือบรรทุก",
-    mapX: 268,
-    mapY: 405,
-    status: "resolved",
-    createdAt: "14 พ.ย. 2569 · 16:20 น.",
-  },
-];
-
-function loadReports() {
+function loadReports(): CitizenReport[] {
   try {
     if (fs.existsSync(REPORTS_STORE_PATH)) {
       const raw = fs.readFileSync(REPORTS_STORE_PATH, "utf-8");
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const retiredSampleIds = new Set(["rep-101", "rep-102", "rep-103"]);
+        return parsed.filter((report): report is CitizenReport => {
+          if (!report || typeof report !== "object") return false;
+          const id = (report as { id?: unknown }).id;
+          return typeof id === "string" && !retiredSampleIds.has(id);
+        });
       }
     }
   } catch {
-    // Fallback to seed reports
+    // Ignore invalid persisted report data.
   }
   return INITIAL_REPORTS;
 }
 
-function saveReports(reports: unknown[]): void {
+function saveReports(reports: CitizenReport[]): void {
   try {
     fs.writeFileSync(REPORTS_STORE_PATH, JSON.stringify(reports, null, 2), "utf-8");
   } catch (err) {
@@ -347,108 +71,10 @@ function saveReports(reports: unknown[]): void {
   }
 }
 
-let citizenReports = loadReports();
+let citizenReports: CitizenReport[] = loadReports();
 
 function buildAlertsFromStations() {
-  return [
-    {
-      id: "alt-hg-cp01",
-      stationId: "st-cp-01",
-      stationNameTh: "สถานีคุ้งบางกระเจ้า — ท้ายนิคมฯ",
-      riverNameTh: "แม่น้ำเจ้าพระยา",
-      provinceTh: "สมุทรปราการ",
-      severity: "critical",
-      contaminantTh: "สารปรอท (Hg) และตะกั่ว (Pb)",
-      measuredValue: "Hg 0.0048 mg/L · Pb 0.068 mg/L",
-      standardLimit: "Hg ≤ 0.002 mg/L · Pb ≤ 0.05 mg/L",
-      exceedRatio: "ปรอทเกินมาตรฐาน 2.4 เท่า",
-      detectedAt: "15 พ.ย. 2569 · 14:30 น.",
-      headlineTh: "เตือนภัยระดับวิกฤต: ตรวจพบสารปรอทและตะกั่วเกินค่ามาตรฐานในเจ้าพระยาตอนล่าง",
-      advisoryVillagersTh:
-        "งดใช้น้ำจากแม่น้ำโดยตรงในการอุปโภคบริโภคหรืออาบน้ำ หากสัมผัสน้ำควรล้างด้วยน้ำประปาสะอาดทันที",
-      advisoryFishermenTh:
-        "งดจับปลาหน้าดินและหอยในรัศมี 5 กิโลเมตรรอบคุ้งบางกระเจ้า จนกว่ากรมควบคุมมลพิษจะประกาศปลดล็อก",
-      advisoryFarmersTh:
-        "ปิดประตูระบายน้ำเข้าบ่อเลี้ยงปลาและแปลงผักริมตลิ่งชั่วคราว ใช้น้ำสำรองจากบ่อพักแทน",
-    },
-    {
-      id: "alt-pb-tc02",
-      stationId: "st-tc-02",
-      stationNameTh: "สถานีท่าน้ำนครชัยศรี",
-      riverNameTh: "แม่น้ำท่าจีน",
-      provinceTh: "นครปฐม",
-      severity: "critical",
-      contaminantTh: "สารตะกั่ว (Pb) และแคดเมียม (Cd)",
-      measuredValue: "Pb 0.082 mg/L · Cd 0.0061 mg/L",
-      standardLimit: "Pb ≤ 0.05 mg/L · Cd ≤ 0.005 mg/L",
-      exceedRatio: "ตะกั่วเกินมาตรฐาน 1.64 เท่า",
-      detectedAt: "15 พ.ย. 2569 · 14:15 น.",
-      headlineTh: "เตือนภัยระดับวิกฤต: ตะกั่วและแคดเมียมสูงเกินเกณฑ์ในแม่น้ำท่าจีน อ.นครชัยศรี",
-      advisoryVillagersTh:
-        "หลีกเลี่ยงการนำน้ำดิบมาต้มดื่ม (การต้มไม่สามารถกำจัดโลหะหนักได้) ใช้ระบบประปาหรือน้ำบรรจุขวด",
-      advisoryFishermenTh:
-        "ระงับการจับสัตว์น้ำในพื้นที่คลองสาขาและบริเวณใกล้ท่อระบายน้ำสาธารณะ",
-      advisoryFarmersTh:
-        "ผู้เลี้ยงปลากระชังควรเพิ่มเครื่องตีน้ำและตรวจค่า DO ทุก 4 ชั่วโมง งดเปลี่ยนถ่ายน้ำจากแม่น้ำหลัก",
-    },
-    {
-      id: "alt-as-mg04",
-      stationId: "st-mg-04",
-      stationNameTh: "สถานีเชียงแสน — ปากน้ำกก",
-      riverNameTh: "แม่น้ำโขง",
-      provinceTh: "เชียงราย",
-      severity: "warning",
-      contaminantTh: "สารหนู (As) และความขุ่นสูง",
-      measuredValue: "As 0.011 mg/L · ความขุ่น 58 NTU",
-      standardLimit: "As ≤ 0.010 mg/L",
-      exceedRatio: "สารหนูเกินมาตรฐาน 1.1 เท่า",
-      detectedAt: "15 พ.ย. 2569 · 14:00 น.",
-      headlineTh: "เฝ้าระวัง: สารหนูและตะกอนแขวนลอยเพิ่มขึ้นจากมวลน้ำเหนือ",
-      advisoryVillagersTh:
-        "ต้องผ่านระบบตกตะกอนและกรองแบบ Reverse Osmosis (RO) หรือเรซินก่อนใช้อุปโภค",
-      advisoryFishermenTh:
-        "ปลาผิวน้ำบริโภคได้ปกติ แต่ควรตัดส่วนหัว เหงือก และเครื่องในทิ้งก่อนประกอบอาหาร",
-      advisoryFarmersTh:
-        "เฝ้าระวังตะกอนอุดตันระบบน้ำหยด และตรวจวัดคุณภาพน้ำในบ่อพักก่อนสูบเข้าพื้นที่เพาะปลูก",
-    },
-    {
-      id: "alt-do-mk03",
-      stationId: "st-mk-03",
-      stationNameTh: "สถานีบ้านโป่ง — คลองสายรอง",
-      riverNameTh: "แม่น้ำแม่กลอง",
-      provinceTh: "ราชบุรี",
-      severity: "warning",
-      contaminantTh: "ออกซิเจนละลายน้ำต่ำ (DO) และตะกั่วใกล้เกณฑ์",
-      measuredValue: "DO 3.9 mg/L · Pb 0.045 mg/L",
-      standardLimit: "DO ≥ 4.0 mg/L · Pb ≤ 0.05 mg/L",
-      exceedRatio: "แตะระดับเฝ้าระวัง 90%",
-      detectedAt: "15 พ.ย. 2569 · 13:50 น.",
-      headlineTh: "เฝ้าระวัง: ค่าออกซิเจนละลายน้ำลดต่ำกว่าเกณฑ์ปกติ 4.0 mg/L",
-      advisoryVillagersTh:
-        "สังเกตสีและกลิ่นน้ำผิดปกติ หากพบปลาลอยหัวหรือตายให้แจ้งผ่านระบบ Report Problem ทันที",
-      advisoryFishermenTh:
-        "จำกัดการบริโภคปลานักล่าขนาดใหญ่ไม่เกิน 150 กรัม/สัปดาห์ สำหรับหญิงตั้งครรภ์และเด็กเล็ก",
-      advisoryFarmersTh:
-        "ลดการให้อาหารปลาในกระชังลง 20% เพื่อลดภาระออกซิเจนในน้ำช่วงกลางคืน",
-    },
-    {
-      id: "alt-ok-pg05",
-      stationId: "st-pg-05",
-      stationNameTh: "สถานีสะพานนวรัฐ และสถานีบ้านท่าพระ",
-      riverNameTh: "แม่น้ำปิง · แม่น้ำชี",
-      provinceTh: "เชียงใหม่ · ขอนแก่น",
-      severity: "normal",
-      contaminantTh: "โลหะหนักทุกชนิดอยู่ในเกณฑ์ปลอดภัย",
-      measuredValue: "Hg 0.0005–0.0007 mg/L · DO > 6.0 mg/L",
-      standardLimit: "Hg ≤ 0.002 mg/L · DO ≥ 4.0 mg/L",
-      exceedRatio: "ต่ำกว่ามาตรฐาน 65–75%",
-      detectedAt: "15 พ.ย. 2569 · 14:20 น.",
-      headlineTh: "สถานะปกติ: คุณภาพน้ำแม่น้ำปิงและแม่น้ำชีอยู่ในเกณฑ์มาตรฐานปลอดภัย",
-      advisoryVillagersTh: "สามารถใช้น้ำเพื่อการอุปโภคและกิจกรรมชุมชนได้ตามปกติ",
-      advisoryFishermenTh: "จับสัตว์น้ำได้ตามปกติ ควรปรุงอาหารให้สุกสะอาด",
-      advisoryFarmersTh: "สามารถสูบน้ำเพื่อการเกษตรและเพาะเลี้ยงสัตว์น้ำได้ตามปกติ",
-    },
-  ];
+  return [];
 }
 
 function getIssueLabel(issueType: string): string {
@@ -532,30 +158,28 @@ async function startServer() {
 
     if (!riverNameTh || !locationDetail || !description) {
       res.status(400).json({
-        error: "กรุณากรอกข้อมูลแม่น้ำ พิกัดสถานที่ และรายละเอียดปัญหาให้ครบถ้วน",
+        error: "กรุณาระบุแม่น้ำ พื้นที่โดยประมาณ และรายละเอียดการสังเกตให้ครบถ้วน",
       });
       return;
     }
 
-    const riverCoordinates: Record<string, { x: number; y: number }> = {
-      "แม่น้ำเจ้าพระยา": { x: 520, y: 412 },
-      "แม่น้ำท่าจีน": { x: 382, y: 370 },
-      "แม่น้ำแม่กลอง": { x: 262, y: 398 },
-      "แม่น้ำโขง": { x: 455, y: 124 },
-      "แม่น้ำปิง": { x: 302, y: 192 },
-      "แม่น้ำชี": { x: 722, y: 274 },
-    };
-    const baseCoord = riverCoordinates[String(riverNameTh)] ?? { x: 500, y: 310 };
-    const jitterX = Math.round((Math.random() - 0.5) * 32);
-    const jitterY = Math.round((Math.random() - 0.5) * 24);
+    const validIssueTypes: CitizenReport["issueType"][] = [
+      "dead_fish",
+      "discolored_water",
+      "chemical_odor",
+      "illegal_discharge",
+    ];
+    const normalizedIssueType = validIssueTypes.includes(issueType)
+      ? (issueType as CitizenReport["issueType"])
+      : "discolored_water";
 
-    const newReport = {
+    const newReport: CitizenReport = {
       id: `rep-${Date.now()}`,
       reporterName: String(reporterName || "ประชาชนผู้แจ้งเหตุ").trim(),
       riverNameTh: String(riverNameTh),
       locationDetail: String(locationDetail).trim(),
-      issueType: String(issueType || "discolored_water"),
-      issueLabelTh: getIssueLabel(String(issueType || "discolored_water")),
+      issueType: normalizedIssueType,
+      issueLabelTh: getIssueLabel(normalizedIssueType),
       severity:
         severity === "critical" || severity === "warning" || severity === "normal"
           ? severity
@@ -565,10 +189,8 @@ async function startServer() {
         typeof photoDataUrl === "string" && photoDataUrl.startsWith("data:image/")
           ? photoDataUrl
           : undefined,
-      mapX: baseCoord.x + jitterX,
-      mapY: baseCoord.y + jitterY,
       status: "pending",
-      createdAt: "เมื่อสักครู่ · รายงานใหม่",
+      createdAt: new Date().toISOString(),
     };
 
     citizenReports = [newReport, ...citizenReports];

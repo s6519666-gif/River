@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertSystemView } from "./components/AlertSystemView";
 import { FishSafetyView } from "./components/FishSafetyView";
 import { ReportAndMediaView } from "./components/ReportAndMediaView";
+import { RiverLogo } from "./components/RiverLogo";
 import { RiskMapView } from "./components/RiskMapView";
 import { TopBar, type AppSection } from "./components/TopBar";
 import { WaterCheckView } from "./components/WaterCheckView";
@@ -84,16 +85,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#f4f8f6] text-slate-900">
       <TopBar
         activeSection={activeSection}
         onNavigate={handleNavigate}
         criticalAlertCount={criticalAlertCount}
       />
 
-      <main className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 py-8">
+      <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
         {loadError && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-800 flex items-center justify-between gap-4">
+          <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
             <span>{loadError}</span>
             <button
               type="button"
@@ -149,45 +150,53 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white mt-12">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-500">
-          <div>
-            <span className="font-semibold text-slate-800">River Alert</span>
-            <span className="mx-2" aria-hidden="true">·</span>
-            <span>
-              แผนที่ผลตรวจจากหน่วยงานพร้อมแหล่งอ้างอิงและวันที่เก็บตัวอย่าง แยกจากข้อสังเกตของชุมชนที่ยังไม่ยืนยัน
-            </span>
+      <footer className="mt-8 border-t border-teal-900/70 bg-[#103c39] text-white">
+        <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:px-8">
+          <div className="flex items-start gap-3">
+            <RiverLogo className="size-10 shrink-0" />
+            <div>
+              <p className="font-display text-sm font-bold tracking-tight">River Alert</p>
+              <p className="mt-1 max-w-xl text-xs leading-relaxed text-teal-100/80">
+                แผนที่ผลตรวจจากหน่วยงานพร้อมแหล่งอ้างอิงและวันที่เก็บตัวอย่าง แยกจากข้อสังเกตของชุมชนที่ยังไม่ยืนยัน
+              </p>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
+          <nav aria-label="ลิงก์ด่วน" className="flex flex-wrap gap-x-5 gap-y-3 text-xs font-medium text-teal-50/90">
             <button
               type="button"
               onClick={() => handleNavigate("water-check")}
-              className="hover:text-slate-800 cursor-pointer"
+              className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
             >
               ตรวจคุณภาพน้ำ
             </button>
             <button
               type="button"
+              onClick={() => handleNavigate("alerts")}
+              className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
+            >
+              แจ้งเตือนภัย
+            </button>
+            <button
+              type="button"
               onClick={() => handleNavigate("risk-map")}
-              className="hover:text-slate-800 cursor-pointer"
+              className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
             >
               แผนที่รายงานคุณภาพน้ำ
             </button>
             <button
               type="button"
               onClick={() => handleNavigate("fish-safety")}
-              className="hover:text-slate-800 cursor-pointer"
+              className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
             >
               ความปลอดภัยปลา
             </button>
             <button
               type="button"
               onClick={() => handleNavigate("report")}
-              className="hover:text-slate-800 cursor-pointer"
+              className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
             >
-              แจ้งปัญหาน้ำเสีย
+              แจ้งปัญหา
             </button>
-          </div>
+          </nav>
         </div>
       </footer>
     </div>

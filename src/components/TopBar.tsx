@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import {
+  BellRing,
+  Droplets,
+  Fish,
+  MapPinned,
+  Menu,
+  MessageSquareWarning,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import { RiverLogo } from "./RiverLogo";
 
 export type AppSection =
   | "water-check"
@@ -14,12 +24,12 @@ interface TopBarProps {
   criticalAlertCount: number;
 }
 
-const NAV_ITEMS: Array<{ id: AppSection; label: string }> = [
-  { id: "water-check", label: "ตรวจคุณภาพน้ำ" },
-  { id: "alerts", label: "แจ้งเตือนภัย" },
-  { id: "risk-map", label: "แผนที่รายงานคุณภาพน้ำ" },
-  { id: "fish-safety", label: "ความปลอดภัยปลา" },
-  { id: "report", label: "แจ้งปัญหา & ภาพ" },
+const NAV_ITEMS: Array<{ id: AppSection; label: string; icon: LucideIcon }> = [
+  { id: "water-check", label: "ตรวจคุณภาพน้ำ", icon: Droplets },
+  { id: "alerts", label: "ประกาศเตือน", icon: BellRing },
+  { id: "risk-map", label: "แผนที่รายงานคุณภาพน้ำ", icon: MapPinned },
+  { id: "fish-safety", label: "ความปลอดภัยปลา", icon: Fish },
+  { id: "report", label: "ข้อสังเกตชุมชน", icon: MessageSquareWarning },
 ];
 
 export function TopBar({
@@ -35,39 +45,49 @@ export function TopBar({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
-        {/* Zone 1: Single text element wordmark */}
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_2px_12px_rgba(15,76,72,0.04)] backdrop-blur-md">
+      <div className="mx-auto flex h-[4.5rem] max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <button
           type="button"
           onClick={() => handleSelect("water-check")}
-          className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          aria-label="River Alert — กลับไปหน้าตรวจคุณภาพน้ำ"
+          className="flex shrink-0 items-center gap-3 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
         >
-          River Alert
+          <RiverLogo className="size-10 shrink-0" />
+          <span className="flex flex-col leading-tight">
+            <span className="font-display text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">
+              River <span className="text-teal-800">Alert</span>
+            </span>
+            <span className="mt-1 hidden text-[10px] font-medium tracking-wide text-slate-500 sm:block">
+              เฝ้าระวังแม่น้ำไทย
+            </span>
+          </span>
         </button>
 
-        {/* Zone 2: 5 concise single-line text navigation links */}
         <nav
           aria-label="เมนูหลัก"
-          className="hidden lg:flex items-center gap-6 text-sm font-medium"
+          className="hidden items-center gap-1 xl:flex"
         >
           {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.id;
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleSelect(item.id)}
-                className={`py-1.5 border-b-2 transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700 ${
+                aria-current={isActive ? "page" : undefined}
+                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
                   isActive
-                    ? "border-teal-700 text-teal-800 font-semibold"
-                    : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                    ? "bg-teal-50 text-teal-900"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
-                {item.label}
+                <Icon className="size-4 shrink-0" aria-hidden="true" />
+                <span className="whitespace-nowrap">{item.label}</span>
                 {item.id === "alerts" && criticalAlertCount > 0 ? (
-                  <span className="ml-1.5 text-xs font-mono tabular-nums text-rose-700">
-                    ({criticalAlertCount})
+                  <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-rose-800">
+                    {criticalAlertCount}
                   </span>
                 ) : null}
               </button>
@@ -75,55 +95,68 @@ export function TopBar({
           })}
         </nav>
 
-        {/* Zone 3: 1 primary action + mobile menu trigger */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => handleSelect("report")}
-            className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-teal-700 rounded-lg hover:bg-teal-800 transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-800 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 sm:px-4 sm:text-sm"
           >
-            แจ้งปัญหาน้ำเสีย
+            <MessageSquareWarning className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">แจ้งปัญหาน้ำเสีย</span>
+            <span className="sm:hidden">แจ้งปัญหา</span>
           </button>
 
           <button
             type="button"
             aria-label={mobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="river-mobile-navigation"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="lg:hidden p-2.5 text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
+            className="rounded-lg p-2.5 text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 xl:hidden"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? (
+              <X className="size-5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-5" aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Dropdown Navigation */}
-      {mobileMenuOpen && (
-        <nav
-          aria-label="เมนูมือถือ"
-          className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 flex flex-col gap-1"
-        >
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelect(item.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  isActive
-                    ? "bg-teal-50 text-teal-800 font-semibold"
-                    : "text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                {item.label}
-                {item.id === "alerts" && criticalAlertCount > 0
-                  ? ` (${criticalAlertCount})`
-                  : ""}
-              </button>
-            );
-          })}
-        </nav>
-      )}
+      <nav
+        id="river-mobile-navigation"
+        aria-label="เมนูมือถือ"
+        hidden={!mobileMenuOpen}
+        className={`flex flex-col gap-1 border-t border-slate-200 bg-white px-4 py-3 sm:px-6 xl:hidden ${
+          mobileMenuOpen ? "" : "hidden"
+        }`}
+      >
+        {NAV_ITEMS.map((item) => {
+          const isActive = activeSection === item.id;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleSelect(item.id)}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                isActive
+                  ? "bg-teal-50 text-teal-900"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
+              <span className="flex-1">{item.label}</span>
+              {item.id === "alerts" && criticalAlertCount > 0 ? (
+                <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800">
+                  {criticalAlertCount} รายการ
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </nav>
     </header>
   );
 }

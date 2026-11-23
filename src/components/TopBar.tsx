@@ -25,11 +25,11 @@ interface TopBarProps {
 }
 
 const NAV_ITEMS: Array<{ id: AppSection; label: string; icon: LucideIcon }> = [
-  { id: "water-check", label: "คุณภาพน้ำ", icon: Droplets },
-  { id: "alerts", label: "แจ้งเตือน", icon: BellRing },
-  { id: "risk-map", label: "แผนที่", icon: MapPinned },
+  { id: "water-check", label: "ตรวจคุณภาพน้ำ", icon: Droplets },
+  { id: "alerts", label: "ประกาศเตือน", icon: BellRing },
+  { id: "risk-map", label: "แผนที่รายงานคุณภาพน้ำ", icon: MapPinned },
   { id: "fish-safety", label: "ความปลอดภัยปลา", icon: Fish },
-  { id: "report", label: "แจ้งปัญหา", icon: MessageSquareWarning },
+  { id: "report", label: "ข้อสังเกตชุมชน", icon: MessageSquareWarning },
 ];
 
 export function TopBar({

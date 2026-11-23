@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CheckCircle2, Fish, Info, ShieldAlert } from "lucide-react";
 import { FISH_SAFETY_LIST } from "../data/fishSafetyData";
+import { PCD_REPORT } from "../data/publicWaterReports";
 import type { MonitoringStation } from "../types/river";
 import { StatusBadge } from "./StatusBadge";
 
@@ -13,7 +14,7 @@ export function FishSafetyView({ stations }: FishSafetyViewProps) {
     FISH_SAFETY_LIST[0].id
   );
   const [selectedStationId, setSelectedStationId] = useState<string>(
-    stations[0]?.id || "st-cp-01"
+    stations[0]?.id || ""
   );
   const [riskFilter, setRiskFilter] = useState<"all" | "low" | "moderate" | "high">(
     "all"
@@ -81,6 +82,43 @@ export function FishSafetyView({ stations }: FishSafetyViewProps) {
     if (riskFilter === "all") return FISH_SAFETY_LIST;
     return FISH_SAFETY_LIST.filter((f) => f.bioaccumulationRisk === riskFilter);
   }, [riskFilter]);
+
+  if (stations.length === 0) {
+    return (
+      <div className="space-y-6">
+        <header>
+          <p className="text-xs font-medium text-slate-500">ข้อมูลความปลอดภัยในการบริโภค</p>
+          <h1 className="mt-1 font-display text-2xl font-bold text-slate-900">
+            ยังไม่มีผลตรวจน้ำที่ใช้ประเมินความปลอดภัยของปลาได้
+          </h1>
+        </header>
+        <section
+          role="status"
+          className="rounded-xl border border-amber-200 bg-amber-50 p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-800" aria-hidden="true" />
+            <div className="space-y-2">
+              <h2 className="font-semibold text-amber-950">
+                ไม่มีชุดข้อมูลสถานีที่เชื่อมต่อและตรวจสอบแหล่งที่มาได้
+              </h2>
+              <p className="text-sm leading-relaxed text-amber-950/85">
+                จึงยังสรุปไม่ได้ว่าปลอดภัยหรือไม่ปลอดภัย และไม่ควรใช้คำแนะนำปริมาณบริโภคหรือรายชื่อพื้นที่ในคู่มือเดิมเป็นผลตรวจจริง
+              </p>
+              <a
+                href={PCD_REPORT.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex text-sm font-semibold text-teal-900 underline underline-offset-4"
+              >
+                ดูรายงานคุณภาพน้ำที่เผยแพร่โดยกรมควบคุมมลพิษ (ไม่ใช่คำแนะนำการบริโภคปลา)
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

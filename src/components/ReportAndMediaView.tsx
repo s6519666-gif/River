@@ -44,9 +44,9 @@ const EDIT_PROMPT_PRESETS = [
 ];
 
 function statusLabelTh(status: ReportStatus): string {
-  if (status === "resolved") return "แก้ไขแล้ว";
-  if (status === "investigating") return "กำลังลงพื้นที่ตรวจ";
-  return "รอเจ้าหน้าที่ตรวจสอบ";
+  if (status === "resolved") return "ปิดการติดตามในแอป (ไม่ได้ยืนยันผลตรวจ)";
+  if (status === "investigating") return "กำลังติดตามในแอป (ยังไม่ยืนยัน)";
+  return "รอการติดตามในแอป";
 }
 
 export function ReportAndMediaView({
@@ -61,7 +61,7 @@ export function ReportAndMediaView({
   const [riverNameTh, setRiverNameTh] = useState("แม่น้ำเจ้าพระยา");
   const [locationDetail, setLocationDetail] = useState("");
   const [issueType, setIssueType] = useState<CitizenReport["issueType"]>("dead_fish");
-  const [severity, setSeverity] = useState<RiskLevel>("critical");
+  const [severity, setSeverity] = useState<RiskLevel>("warning");
   const [description, setDescription] = useState("");
   const [photoDataUrl, setPhotoDataUrl] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -125,7 +125,7 @@ export function ReportAndMediaView({
         throw new Error(data.error || "ไม่สามารถส่งรายงานได้");
       }
       onReportCreated(data.report);
-      setSubmitMessage("ส่งรายงานสำเร็จ ข้อมูลถูกปักหมุดบนแผนที่พื้นที่เสี่ยงแล้ว");
+      setSubmitMessage("บันทึกข้อสังเกตแล้ว รายการนี้ยังไม่ผ่านการยืนยันและไม่มีพิกัดที่ตรวจสอบได้");
       setLocationDetail("");
       setDescription("");
       setPhotoDataUrl("");
@@ -216,14 +216,14 @@ export function ReportAndMediaView({
       <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <div className="text-xs text-slate-500 font-medium">
-            การมีส่วนร่วมของชุมชนริมแม่น้ำ · แจ้งเหตุและผลิตสื่อเตือนภัย
+            ข้อสังเกตจากชุมชน · ยังไม่ใช่ผลตรวจจากหน่วยงาน
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
-            แจ้งปัญหามลพิษทางน้ำและสตูดิโอภาพเตือนภัย
+            บันทึกข้อสังเกตริมแม่น้ำ
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            ส่งภาพถ่ายเหตุการณ์น้ำเสียหรือปลาตายเพื่อให้หน่วยงานเข้าตรวจสอบ
-            พร้อมเครื่องมือสร้างและปรับแต่งภาพรณรงค์คุณภาพสูงสำหรับชุมชน
+            ระบบนี้เก็บข้อมูลที่ผู้ใช้ส่งไว้ในแอปเท่านั้น ไม่ได้ส่งต่อให้หน่วยงานหรือยืนยันเหตุการณ์
+            ส่วนเครื่องมือสร้างภาพมีไว้ทำสื่อประกอบ ไม่ใช่ภาพหลักฐาน
           </p>
         </div>
 
@@ -262,7 +262,7 @@ export function ReportAndMediaView({
                 แบบฟอร์มแจ้งเหตุน้ำเสียหรือพบสัตว์น้ำตาย
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                รายงานของคุณจะปรากฏบนแผนที่ความเสี่ยงทันทีเพื่อเตือนชาวบ้านในพื้นที่ใกล้เคียง
+                ข้อสังเกตจากผู้ใช้ยังไม่ผ่านการตรวจยืนยัน และจะไม่แสดงเป็นหมุดบนแผนที่
               </p>
             </div>
 
@@ -314,7 +314,7 @@ export function ReportAndMediaView({
 
               <label className="block">
                 <span className="text-xs font-semibold text-slate-700">
-                  พิกัดสถานที่ / ท่าน้ำ / จุดสังเกตใกล้เคียง *
+                    คำบรรยายสถานที่ / ท่าน้ำ / จุดสังเกตใกล้เคียง *
                 </span>
                 <input
                   type="text"
@@ -347,15 +347,15 @@ export function ReportAndMediaView({
 
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-700">
-                    ระดับความเร่งด่วน
+                    ระดับความเร่งด่วนที่ผู้แจ้งประเมิน
                   </span>
                   <select
                     value={severity}
                     onChange={(e) => setSeverity(e.target.value as RiskLevel)}
                     className="mt-1 w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-700"
                   >
-                    <option value="critical">วิกฤต — กระทบสัตว์น้ำ/ชุมชนทันที</option>
-                    <option value="warning">เฝ้าระวัง — ควรเข้าตรวจสอบ</option>
+                    <option value="critical">ผู้แจ้งระบุว่าต้องติดตามเร่งด่วน</option>
+                    <option value="warning">ผู้แจ้งระบุว่าควรติดตาม</option>
                   </select>
                 </label>
               </div>
@@ -376,12 +376,12 @@ export function ReportAndMediaView({
 
               <div>
                 <span className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  แนบภาพถ่ายหลักฐาน (ถ้ามี)
+                  แนบภาพถ่ายประกอบจากผู้แจ้ง (ถ้ามี)
                 </span>
                 <label className="flex flex-col items-center justify-center border border-dashed border-slate-300 rounded-xl p-4 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
                   <Camera className="w-5 h-5 text-slate-500 mb-1.5" />
                   <span className="text-xs font-medium text-slate-700">
-                    เลือกภาพถ่ายสภาพน้ำหรือปลาตายจากอุปกรณ์
+                    เลือกภาพถ่ายประกอบเหตุการณ์จากอุปกรณ์
                   </span>
                   <input
                     type="file"
@@ -426,7 +426,7 @@ export function ReportAndMediaView({
                 {!guideImgFailed ? (
                   <img
                     src="/src/assets/images/water_sampling_field_1794815672517.jpg"
-                    alt="เจ้าหน้าที่สิ่งแวดล้อมเก็บตัวอย่างน้ำในแม่น้ำเพื่อตรวจวัดโลหะหนัก"
+                    alt="ภาพประกอบการเก็บตัวอย่างน้ำ ไม่ใช่ภาพจากรายงานที่ผู้ใช้ส่ง"
                     referrerPolicy="no-referrer"
                     onError={() => setGuideImgFailed(true)}
                     className="w-full h-full object-cover"
@@ -439,14 +439,14 @@ export function ReportAndMediaView({
               </div>
               <div className="sm:col-span-7 p-5 flex flex-col justify-center space-y-2">
                 <div className="text-xs font-semibold text-teal-800">
-                  ขั้นตอนหลังได้รับแจ้งเหตุ
+                  ข้อควรรู้เกี่ยวกับรายงานจากชุมชน
                 </div>
                 <h3 className="text-base font-bold text-slate-900">
-                  การลงพื้นที่เก็บตัวอย่างน้ำตรวจวิเคราะห์
+                  รายงานนี้ไม่ได้ตรวจสอบหรือส่งต่อหน่วยงาน
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  รายงานที่มีภาพถ่ายและจุดพิกัดชัดเจนจะถูกส่งต่อให้ทีมสิ่งแวดล้อมเก็บตัวอย่างน้ำตรวจวัดปรอท
-                  ตะกั่ว และค่าออกซิเจนละลายน้ำภายใน 24 ชั่วโมง
+                  ข้อความและภาพที่ส่งเป็นข้อมูลจากผู้ใช้เท่านั้น แอปนี้ไม่ได้ตรวจสอบ ไม่ได้ส่งต่อหน่วยงาน และไม่รับรองเวลาการตรวจวัด
+                  ภาพที่สร้างด้วยเครื่องมือในแอปเป็นสื่อประกอบ ไม่ใช่หลักฐานเหตุการณ์จริง
                 </p>
               </div>
             </div>
@@ -457,10 +457,15 @@ export function ReportAndMediaView({
                   รายการแจ้งเหตุจากชุมชนล่าสุด ({reports.length})
                 </h3>
                 <span className="text-xs text-slate-500">
-                  อัปเดตสถานะการตรวจสอบได้แบบเรียลไทม์
+                  สถานะในแอป · ไม่ใช่การยืนยันผลตรวจ
                 </span>
               </div>
 
+              {reports.length === 0 ? (
+                <p className="rounded-lg bg-slate-50 p-4 text-xs leading-relaxed text-slate-600">
+                  ยังไม่มีข้อสังเกตจากชุมชนในระบบ การไม่มีรายงานไม่ได้ยืนยันว่าพื้นที่ปลอดภัยหรือมีปัญหา
+                </p>
+              ) : (
               <div className="divide-y divide-slate-100">
                 {reports.map((rep) => (
                   <div key={rep.id} className="py-4 first:pt-0 last:pb-0 space-y-2.5">
@@ -479,7 +484,13 @@ export function ReportAndMediaView({
                           {rep.issueLabelTh}
                         </h4>
                       </div>
-                      <StatusBadge status={rep.severity} />
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-medium text-slate-500">ระดับที่ผู้แจ้งประเมิน</span>
+                        <StatusBadge
+                          status={rep.severity}
+                          customLabel={`ผู้แจ้งระบุ: ${rep.severity === "critical" ? "เร่งด่วน" : rep.severity === "warning" ? "ควรติดตาม" : "ปกติ"}`}
+                        />
+                      </div>
                     </div>
 
                     {rep.photoDataUrl && (
@@ -505,9 +516,9 @@ export function ReportAndMediaView({
                       <div className="flex items-center gap-1.5">
                         {(
                           [
-                            { id: "pending", label: "รอตรวจ" },
-                            { id: "investigating", label: "กำลังลงพื้นที่" },
-                            { id: "resolved", label: "แก้ไขแล้ว" },
+                            { id: "pending", label: "รอติดตาม" },
+                            { id: "investigating", label: "กำลังติดตามในแอป" },
+                            { id: "resolved", label: "ปิดการติดตามในแอป" }
                           ] as const
                         ).map((st) => (
                           <button
@@ -528,6 +539,7 @@ export function ReportAndMediaView({
                   </div>
                 ))}
               </div>
+              )}
             </div>
           </div>
         </div>

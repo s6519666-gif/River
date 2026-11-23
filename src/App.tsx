@@ -157,7 +157,7 @@ export default function App() {
             <div>
               <p className="font-display text-sm font-bold tracking-tight">River Alert</p>
               <p className="mt-1 max-w-xl text-xs leading-relaxed text-teal-100/80">
-                ระบบเฝ้าระวังคุณภาพน้ำและเตือนภัยสารปนเปื้อนสำหรับชุมชนริมแม่น้ำ ชาวประมง และเกษตรกร
+                แผนที่ผลตรวจจากหน่วยงานพร้อมแหล่งอ้างอิงและวันที่เก็บตัวอย่าง แยกจากข้อสังเกตของชุมชนที่ยังไม่ยืนยัน
               </p>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function App() {
               onClick={() => handleNavigate("risk-map")}
               className="rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-200"
             >
-              แผนที่ความเสี่ยง
+              แผนที่รายงานคุณภาพน้ำ
             </button>
             <button
               type="button"

@@ -17,8 +17,6 @@ export interface MonitoringStation {
   provinceTh: string;
   lat: number;
   lng: number;
-  mapX: number; // SVG 0-1000 coordinate
-  mapY: number; // SVG 0-620 coordinate
   status: RiskLevel;
   updatedAt: string;
   mercuryMgL: number; // PCD limit: 0.002 mg/L
@@ -66,8 +64,6 @@ export interface CitizenReport {
   severity: RiskLevel;
   description: string;
   photoDataUrl?: string;
-  mapX: number;
-  mapY: number;
   status: ReportStatus;
   createdAt: string;
 }

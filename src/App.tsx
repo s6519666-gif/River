@@ -159,6 +159,7 @@ export default function App() {
               <p className="mt-1 max-w-xl text-xs leading-relaxed text-teal-100/80">
                 แผนที่ผลตรวจจากหน่วยงานพร้อมแหล่งอ้างอิงและวันที่เก็บตัวอย่าง แยกจากข้อสังเกตของชุมชนที่ยังไม่ยืนยัน
               </p>
+            </div>
           </div>
           <nav aria-label="ลิงก์ด่วน" className="flex flex-wrap gap-x-5 gap-y-3 text-xs font-medium text-teal-50/90">
             <button

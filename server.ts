@@ -120,9 +120,8 @@ function formatGeminiError(error: unknown): { status: number; message: string } 
   return { status: 500, message: rawMessage };
 }
 
-async function startServer() {
-  const app = express();
-  app.use(express.json({ limit: "15mb" }));
+const app = express();
+app.use(express.json({ limit: "15mb" }));
 
   app.get("/api/health", (_req: Request, res: Response) => {
     res.json({ ok: true, service: "river-alert-api" });
@@ -481,6 +480,9 @@ async function startServer() {
     }
   });
 
+export default app;
+
+async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -500,4 +502,6 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  void startServer();
+}
